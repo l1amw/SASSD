@@ -11,7 +11,7 @@ from torch.nn.parameter import Parameter
 from torch.autograd import Variable
 import fairseq
 
-# Copied and modified from https://github.com/TakHemlata/SSL_Anti-spoofing/blob/main/Simplified_CM_solution.py
+# Modified from https://github.com/TakHemlata/SSL_Anti-spoofing/blob/main/Simplified_CM_solution.py
 
 ############################
 ## FOR fine-tuning SSL MODEL
@@ -20,9 +20,7 @@ import fairseq
 class SSLModel(nn.Module):
     def __init__(self,device):
         super(SSLModel, self).__init__()
-        
-        cp_path = "./SSL_pretrained/xlsr_53_56k.pt"
-        #'/change_to_path_to_pre_trained_model_XLR_300M/xlsr2_300m.pt'  
+        cp_path = "./SSL_pretrained/xlsr_53_56k.pt" 
         model, cfg, task = fairseq.checkpoint_utils.load_model_ensemble_and_task([cp_path])
         self.model = model[0]
         self.device=device
@@ -30,7 +28,6 @@ class SSLModel(nn.Module):
         return
 
     def extract_feat(self, input_data):
-        
         # put the model to GPU if it not there
         if next(self.model.parameters()).device != input_data.device \
            or next(self.model.parameters()).dtype != input_data.dtype:
@@ -176,7 +173,6 @@ class GraphPool(nn.Module):
 class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
-
         #SSL model
         self.device="cuda"
         self.ssl_model = SSLModel(self.device)
