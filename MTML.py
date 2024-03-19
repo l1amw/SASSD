@@ -16,11 +16,12 @@ class MTML(nn.Module):
         model.train()
         FocalOC.train()
         
-        meta_lr = self.get_meta_lr(cur_epoch)
         self.adjust_learning_rate_loss(FocalOC_optim, cur_epoch)
 
         # There are 250 iterations (batches) per epoch.
-        for batch in meta_data_loader:
+        for iter, batch in enumerate(meta_data_loader}:
+            meta_lr = self.get_meta_lr(cur_epoch, iter)
+            
             original_weights = [deepcopy(model.state_dict()), deepcopy(FocalOC.state_dict())]
             new_weights = [[],[]]
 
@@ -81,9 +82,9 @@ class MTML(nn.Module):
             param_group['lr'] = lr
 
 
-    def get_meta_lr(self, epoch_num):
-        meta_lr = 1.0 * (1. + math.cos(math.pi*epoch_num / 100)) / 2.
-        meta_lr = max(meta_lr, 0.05)
+    def get_meta_lr(self, epoch_num, iter):
+        meta_lr = 1.0 * (1. + math.cos(math.pi*(epoch_num + iter / 250) / 100)) / 2.
+        meta_lr = max(meta_lr, 0.01)
         return meta_lr
 
 
