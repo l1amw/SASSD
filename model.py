@@ -13,17 +13,14 @@ import fairseq
 
 # Modified from https://github.com/TakHemlata/SSL_Anti-spoofing/blob/main/Simplified_CM_solution.py
 
-############################
-## FOR fine-tuning SSL MODEL
-############################
 
 class SSLModel(nn.Module):
-    def __init__(self,device):
+    def __init__(self, device):
         super(SSLModel, self).__init__()
         cp_path = "./SSL_pretrained/xlsr_53_56k.pt" 
         model, cfg, task = fairseq.checkpoint_utils.load_model_ensemble_and_task([cp_path])
         self.model = model[0]
-        self.device=device
+        self.device = device
         self.out_dim = 1024
         return
 
@@ -174,45 +171,32 @@ class Model(nn.Module):
     def __init__(self):
         super(Model, self).__init__()
         #SSL model
-        self.device="cuda"
+        self.device = "cuda"
         self.ssl_model = SSLModel(self.device)
         self.LL = nn.Linear(self.ssl_model.out_dim, 128)
         self.first_bn = nn.BatchNorm1d(num_features=128)
         self.selu = nn.SELU(inplace=True)
         
         # graph module layer
-        self.GAT_layer = GraphAttentionLayer(128,64)
+        self.GAT_layer = GraphAttentionLayer(128, 64)
         self.pool = GraphPool(0.8, 64, 0.3)
-        self.proj = nn.Linear(64,4)
+        self.proj = nn.Linear(64, 4)
         
     def forward(self, x_inp):
         # SSL wav2vec 2.0 model
         x_ssl_feat = self.ssl_model.extract_feat(x_inp.squeeze(-1))
         x_SSL = self.LL(x_ssl_feat)      #(bs,frame_number,feat_out_dim)
 
-        x_SSL = x_SSL.transpose(1, 2)   #(bs,feat_out_dim,frame_number)
-        x = F.max_pool1d(x_SSL,(3))
+        x_SSL = x_SSL.transpose(1, 2)    #(bs,feat_out_dim,frame_number)
+        x = F.max_pool1d(x_SSL, (3))
         x = self.first_bn(x)
         x = self.selu(x)
              
         x = self.GAT_layer(x.transpose(1,2))
         x = self.pool(x)
         feat = self.proj(x).flatten(1)
-
-        return feat
-
-    
-if __name__ == "__main__":
-    model = Model().to("cuda")
-    x = torch.rand([3, 64600]).to("cuda")
-    model(x)
-
-    #torch.Size([3, 212])
-
         
-
-
-
+        return feat
 
 
 
