@@ -7,14 +7,16 @@ import random
 
 
 class ShuffleMix(nn.Module):
-    def __init__(self, alpha=1.0, num_seg=3, MixOrCut="CutMix"):
+    def __init__(self, alpha=1.0, num_seg=3, shuff="True", MixOrCut="CutMix"):
         super(ShuffleMix, self).__init__()
         self.alpha = alpha
         self.num_seg = num_seg
+        self.shuff = shuff
         self.MixOrCut = MixOrCut
 
     def forward(self, x):
-        x = self.Shuffle(x, self.num_seg)
+        if self.shuff == "True":
+            x = self.Shuffle(x, self.num_seg)
 
         if self.MixOrCut == "Mixup":
             x, lam, index = self.Mixup(x, self.alpha)
