@@ -10,7 +10,7 @@ class MTML(nn.Module):
         super(MTML, self).__init__()
         self.args = args
         self.device = device
-        self.DataAug = ShuffleMix(args.alpha, args.num_seg, args.MixOrCut)
+        self.DataAug = ShuffleMix(args.alpha, args.num_seg, args.Shuffle, args.MixOrCut)
 
     def forward(self, meta_data_loader, model, optim, FocalOC, FocalOC_optim, cur_epoch):
         model.train()
@@ -43,7 +43,7 @@ class MTML(nn.Module):
 
             #model update step
             self.update_model(model, original_weights[0], new_weights[0], meta_lr)
-            self.update_model(FocalOC, original_weights[1], new_weights[1], meta_lr)
+            self.update_model(FocalOC, original_weights[1], new_weights[1], 1.0)
 
         return model, FocalOC
 
@@ -83,8 +83,8 @@ class MTML(nn.Module):
 
 
     def get_meta_lr(self, epoch_num, iter):
-        meta_lr = 1.0 * (1. + math.cos(math.pi*(epoch_num + iter / 250) / 100)) / 2.
-        meta_lr = max(meta_lr, 0.01)
+        meta_lr = 1.0 * (1. + math.cos(math.pi*(epoch_num + iter / 250) / 70)) / 2.
+        meta_lr = max(meta_lr, 0.05)
         return meta_lr
 
 
