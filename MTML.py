@@ -20,7 +20,7 @@ class MTML(nn.Module):
 
         # There are 250 iterations (batches) per epoch.
         for iter, batch in enumerate(meta_data_loader}:
-            meta_lr = self.get_meta_lr(cur_epoch, iter)
+            meta_lr = self.get_meta_lr(cur_epoch, iter, 70, 0.05):
             
             original_weights = [deepcopy(model.state_dict()), deepcopy(FocalOC.state_dict())]
             new_weights = [[],[]]
@@ -82,9 +82,12 @@ class MTML(nn.Module):
             param_group['lr'] = lr
 
 
-    def get_meta_lr(self, epoch_num, iter):
-        meta_lr = 1.0 * (1. + math.cos(math.pi*(epoch_num + iter / 250) / 70)) / 2.
-        meta_lr = max(meta_lr, 0.05)
-        return meta_lr
+    def get_meta_lr(self, epoch_num, iter, max_eps, min_lr):
+        if epoch_num < max_eps:
+            meta_lr = 1.0 * (1. + math.cos(math.pi*(epoch_num + iter / 250) / max_eps)) / 2.
+            meta_lr = max(meta_lr, min_lr)
+            return meta_lr
+        else:
+            return min_lr
 
 
